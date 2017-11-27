@@ -36,26 +36,26 @@ struct qnode * pop(struct queue *q){
 }
 
 struct node * genNode(int data){
-  struct node * ytp = (struct node *)calloc(1, sizeof(struct node));
-  ytp->data = data;
-  return ytp;
+  struct node * node_ptr = (struct node *)calloc(1, sizeof(struct node));
+  node_ptr->data = data;
+  return node_ptr;
 }
 
 int main(){
   // node declare
-  struct node * YTA[8];
+  struct node * nodeArr[8];
   // node data init;
   for(int i=1;i<=8;i++){
-    YTA[i-1] = genNode(i);
+    nodeArr[i-1] = genNode(i);
   }
   // build tree
-  YTA[0]->left = YTA[1];
-  YTA[0]->right = YTA[2];
-  YTA[1]->left = YTA[3];
-  YTA[2]->left = YTA[4];
-  YTA[2]->right = YTA[5];
-  YTA[4]->left = YTA[6];
-  YTA[4]->right = YTA[7];
+  nodeArr[0]->left = nodeArr[1];
+  nodeArr[0]->right = nodeArr[2];
+  nodeArr[1]->left = nodeArr[3];
+  nodeArr[2]->left = nodeArr[4];
+  nodeArr[2]->right = nodeArr[5];
+  nodeArr[4]->left = nodeArr[6];
+  nodeArr[4]->right = nodeArr[7];
   /*
         1
       /  \
@@ -72,7 +72,7 @@ int main(){
   struct queue * q = (struct queue *)calloc(1, sizeof(struct queue));
   struct qnode * qn = (struct qnode *)calloc(1, sizeof(struct qnode));
   struct qnode * cur;
-  qn->data_ptr = YTA[0];
+  qn->data_ptr = nodeArr[0];
   push(qn, q);
   while(q->size != 0){
     cur = pop(q);
