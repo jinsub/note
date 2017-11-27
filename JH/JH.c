@@ -6,27 +6,32 @@ struct node{
   struct node * left, * right;
 };
 
-struct qnode{
+struct lnode{
+  int node_num;
   struct node * data_ptr;
-  struct qnode * next;
+  struct lnode * next;
 };
 
 struct queue{
-  struct qnode * write, * read;
+  struct lnode * write, * read;
+  int size;
+};
+struct stack{
+  struct lnode * top;
   int size;
 };
 
-void push(struct qnode * qn, struct queue *q){
+void q_push(struct lnode * ln, struct queue *q){
   if(q->write == NULL){
-    q->write = q->read = qn;
+    q->write = q->read = ln;
   } else {
-    q->write->next = qn;
-    q->write = qn;
+    q->write->next = ln;
+    q->write = ln;
   }
   q->size++;
 }
-struct qnode * pop(struct queue *q){
-  struct qnode * ret;
+struct lnode * q_pop(struct queue *q){
+  struct lnode * ret;
   if(q->read == NULL) return NULL;
   ret = q->read;
   q->read = q->read->next;
@@ -34,11 +39,78 @@ struct qnode * pop(struct queue *q){
   q->size--;
   return ret;
 }
+void s_push(struct lnode *ln, struct stack * st){
+  if(st->top == NULL){
+    st->top = ln;
+    ln->next = NULL;
+  } else {
+    ln->next = st->top;
+    st->top = ln;
+  }
+  st->size++;
+}
+struct lnode * s_pop(struct stack * st){
+  struct lnode * ln;
+  if(st->top == NULL) return NULL;
+  ln = st->top;
+  st->top = st->top->next;
+  st->size--;
+  return ln;
+}
 
 struct node * genNode(int data){
   struct node * node_ptr = (struct node *)calloc(1, sizeof(struct node));
   node_ptr->data = data;
   return node_ptr;
+}
+
+int * bstToArray(struct node * root){
+  if(root == NULL) return NULL;
+  int arr_size;
+  int * bst2arr;
+
+  struct queue q;
+  struct stack st;
+  q.write = q.read = NULL;
+  st.top = NULL;
+  q.size = st.size = 0;
+
+  struct lnode * qn = (struct lnode *)calloc(1, sizeof(struct lnode));
+  struct lnode * cur;
+  qn->data_ptr = root;
+  qn->node_num = 1;
+  q_push(qn, &q);
+
+  while(q.size != 0){
+    cur = q_pop(&q);
+    s_push(cur, &st);
+    if(cur->data_ptr->left != NULL){
+      qn = (struct lnode *)calloc(1, sizeof(struct lnode));
+      qn->data_ptr = cur->data_ptr->left;
+      qn->node_num = cur->node_num*2;
+      q_push(qn, &q);
+    }
+    if(cur->data_ptr->right != NULL){
+      qn = (struct lnode *)calloc(1, sizeof(struct lnode));
+      qn->data_ptr = cur->data_ptr->right;
+      qn->node_num = cur->node_num*2 + 1;
+      q_push(qn, &q);
+    }
+  }
+
+  arr_size = st.top->node_num+1;
+  bst2arr = (int *)calloc(arr_size, sizeof(int));
+  bst2arr[0] = st.size;
+  while(st.size != 0){
+    cur = s_pop(&st);
+    bst2arr[cur->node_num] = cur->data_ptr->data;
+    free(cur);
+  }
+  for(int i=0;i<arr_size; i++){
+    printf("[%d]:%d, ",i,bst2arr[i]);
+  }
+  printf("\n");
+  return bst2arr;
 }
 
 int main(){
@@ -66,33 +138,6 @@ int main(){
      7  8
   */
   //
-  int tot_size = 0;
-  int bst2arr[20];    // 적당히 20
-  int idx = 1;
-  struct queue * q = (struct queue *)calloc(1, sizeof(struct queue));
-  struct qnode * qn = (struct qnode *)calloc(1, sizeof(struct qnode));
-  struct qnode * cur;
-  qn->data_ptr = nodeArr[0];
-  push(qn, q);
-  while(q->size != 0){
-    cur = pop(q);
-    if(cur->data_ptr == NULL) bst2arr[idx++] = 0;
-    else {
-      tot_size++;
-      bst2arr[idx++] = cur->data_ptr->data;
-      qn = (struct qnode *)calloc(1, sizeof(struct qnode));
-      qn->data_ptr = cur->data_ptr->left;
-      push(qn, q);
-      qn = (struct qnode *)calloc(1, sizeof(struct qnode));
-      qn->data_ptr = cur->data_ptr->right;
-      push(qn, q);
-    }
-    free(cur);
-  }
-  bst2arr[0] = tot_size;
-  for(int i=0;i<idx;i++){
-    printf("[%d]", bst2arr[i]);
-  }
-  printf("\n");
+  bstToArray(nodeArr[0]);
   return 0;
 }
